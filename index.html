@@ -729,6 +729,10 @@
                 </div>
                 <div class="form-group">
                     <label>Assigned Products *</label>
+                    <div style="margin-bottom: 10px;">
+                        <button type="button" class="btn btn-secondary" onclick="selectAllProducts()" style="padding: 6px 12px; font-size: 12px;">Select All</button>
+                        <button type="button" class="btn btn-secondary" onclick="deselectAllProducts()" style="padding: 6px 12px; font-size: 12px; margin-left: 5px;">Deselect All</button>
+                    </div>
                     <div id="productCheckboxes" style="max-height: 150px; overflow-y: auto; border: 1px solid #e1e5e9; padding: 10px; border-radius: 4px;">
                         <!-- Product checkboxes will be populated here -->
                     </div>
@@ -747,12 +751,31 @@
                 </div>
                 <div class="form-group">
                     <label>Update Assigned Products</label>
+                    <div style="margin-bottom: 10px;">
+                        <button type="button" class="btn btn-secondary" onclick="selectAllModifyProducts()" style="padding: 6px 12px; font-size: 12px;">Select All</button>
+                        <button type="button" class="btn btn-secondary" onclick="deselectAllModifyProducts()" style="padding: 6px 12px; font-size: 12px; margin-left: 5px;">Deselect All</button>
+                    </div>
                     <div id="modifyProductCheckboxes" style="max-height: 150px; overflow-y: auto; border: 1px solid #e1e5e9; padding: 10px; border-radius: 4px;">
                         <!-- Product checkboxes will be populated here -->
                     </div>
                 </div>
             </div>
             <button class="btn btn-secondary" onclick="updateEmployeeProducts()">Update Access</button>
+
+            <h3 style="margin-top: 30px;">Bulk Upload Work Logs</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="bulkUploadFile">Upload CSV/Excel File</label>
+                    <input type="file" id="bulkUploadFile" accept=".csv,.xlsx,.xls" style="padding: 8px; border: 1px solid #e1e5e9; border-radius: 4px; width: 100%;">
+                    <small>Upload CSV or Excel file with work log entries</small>
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-secondary" onclick="downloadSampleFile()" style="margin-right: 10px;">📥 Download Sample File</button>
+                    <button class="btn" onclick="processBulkUpload()">📤 Upload & Process</button>
+                </div>
+            </div>
+            
+            <div id="bulkUploadResults" style="margin-top: 20px;"></div>
         </div>
 
         <!-- List Management Tab -->
@@ -846,8 +869,9 @@
                 </div>
 
                 <div style="margin-top: 20px;">
-                    <button class="btn btn-success" onclick="showDeploymentInstructions()">📋 Complete Deployment Guide</button>
-                    <button class="btn" onclick="downloadCompleteSystem()">📥 Download System File</button>
+                    <button class="btn btn-success" onclick="exportSystemConfiguration()">📋 Export System Configuration</button>
+                    <button class="btn btn-secondary" onclick="downloadSharePointCompatibleFile()">📥 Download System File</button>
+                    <button class="btn" onClick="generateSPFxPackage()">🔧 Advanced Options</button>
                 </div>
             </div>
         </div>
@@ -1766,16 +1790,338 @@
             showAlert(`Added "${newItem}" to ${listType.replace(/([A-Z])/g, ' $1').toLowerCase()}`, 'success');
         }
 
-        function removeListItem(listType, index) {
-            const item = companyData[listType][index];
+        // Select/Deselect all products functions
+        function selectAllProducts() {
+            document.querySelectorAll('#productCheckboxes input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = true;
+            });
+        }
+
+        function deselectAllProducts() {
+            document.querySelectorAll('#productCheckboxes input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+        }
+
+        function selectAllModifyProducts() {
+            document.querySelectorAll('#modifyProductCheckboxes input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = true;
+            });
+        }
+
+        function deselectAllModifyProducts() {
+            document.querySelectorAll('#modifyProductCheckboxes input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+        }
+
+        // Export system configuration
+        function exportSystemConfiguration() {
+            const systemConfig = {
+                exportDate: new Date().toISOString(),
+                systemInfo: {
+                    name: "Digital Work Logging System",
+                    version: "1.0",
+                    company: "Digital",
+                    totalEmployees: companyData.taskOwners.length,
+                    totalProducts: companyData.products.length,
+                    totalWorkLogs: workLogs.length,
+                    totalLeaveEntries: leaveEntries.length
+                },
+                columns: {
+                    workLogColumns: [
+                        "Start Date", "End Date", "Task Type", "Time Taken (Minutes)", 
+                        "Issue/Task/Requirement", "Origin of the issue/Task/Requirement", 
+                        "Operator/Region", "Product", "Task/Issue Impact", 
+                        "Ticket Internal Jira", "Ticket External/IM", "Task/Issue Owner", 
+                        "Status", "Comments"
+                    ],
+                    leaveColumns: [
+                        "Employee", "Start Date", "End Date", "Leave Type", "Duration", 
+                        "Reason", "Status", "Manager Comments", "Applied Date"
+                    ]
+                },
+                dropdownLists: {
+                    taskTypes: companyData.taskTypes,
+                    originSources: companyData.originSources,
+                    operatorRegions: companyData.operatorRegions,
+                    products: companyData.products,
+                    impactLevels: companyData.impactLevels,
+                    taskOwners: companyData.taskOwners,
+                    statusOptions: companyData.statusOptions,
+                    leaveTypes: ["Annual Leave", "Sick Leave", "Emergency Leave", "Maternity Leave", "Paternity Leave", "Casual Leave", "Compensatory Off", "Work From Home"],
+                    leaveDurations: ["Full Day", "Half Day - Morning", "Half Day - Afternoon"],
+                    leaveStatuses: ["Pending", "Approved", "Rejected"]
+                },
+                employeeProductMappings: employeeProductMapping,
+                sampleData: {
+                    workLogSample: workLogs.slice(0, 3),
+                    leaveSample: leaveEntries.slice(0, 2)
+                }
+            };
+
+            const blob = new Blob([JSON.stringify(systemConfig, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `system-configuration-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
             
-            if (confirm(`Are you sure you want to remove "${item}"?`)) {
-                companyData[listType].splice(index, 1);
-                saveToStorage();
-                updateDropdowns();
-                loadCurrentList();
-                showAlert(`Removed "${item}" from the list`, 'success');
+            showAlert('✅ System configuration exported successfully!', 'success');
+        }
+
+        // Download sample file for bulk upload
+        function downloadSampleFile() {
+            const sampleData = [
+                {
+                    "Start Date": "2025-05-30",
+                    "End Date": "2025-05-30", 
+                    "Task Type": "Activity",
+                    "Time Taken (Minutes)": 120,
+                    "Issue/Task/Requirement": "Sample task description here",
+                    "Origin of the issue/Task/Requirement": "Email",
+                    "Operator/Region": "ORD Myanmar",
+                    "Product": "Selfcare",
+                    "Task/Issue Impact": "Minor-P3",
+                    "Ticket Internal Jira": "PROJ-1234",
+                    "Ticket External/IM": "INC567890",
+                    "Task/Issue Owner": "Nitesh B",
+                    "Status": "Completed",
+                    "Comments": "Sample comments"
+                },
+                {
+                    "Start Date": "2025-05-31",
+                    "End Date": "2025-05-31",
+                    "Task Type": "Issue Check", 
+                    "Time Taken (Minutes)": 90,
+                    "Issue/Task/Requirement": "Another sample task",
+                    "Origin of the issue/Task/Requirement": "Teams",
+                    "Operator/Region": "BSNL India",
+                    "Product": "MiniApp",
+                    "Task/Issue Impact": "Major-P2",
+                    "Ticket Internal Jira": "PROJ-5678",
+                    "Ticket External/IM": "",
+                    "Task/Issue Owner": "Vishal V",
+                    "Status": "Pending",
+                    "Comments": "In progress"
+                }
+            ];
+
+            // Convert to CSV
+            const headers = Object.keys(sampleData[0]);
+            let csv = headers.join(',') + '\n';
+            sampleData.forEach(row => {
+                const values = headers.map(header => {
+                    const value = row[header] || '';
+                    return `"${value}"`;
+                });
+                csv += values.join(',') + '\n';
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'work-log-sample-template.csv';
+            link.click();
+            URL.revokeObjectURL(url);
+            
+            showAlert('📥 Sample CSV template downloaded!', 'success');
+        }
+
+        // Process bulk upload
+        async function processBulkUpload() {
+            const fileInput = document.getElementById('bulkUploadFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showAlert('Please select a file to upload', 'warning');
+                return;
             }
+
+            const resultsDiv = document.getElementById('bulkUploadResults');
+            resultsDiv.innerHTML = '<div class="alert alert-info">Processing file...</div>';
+
+            try {
+                let data = [];
+                
+                if (file.name.toLowerCase().endsWith('.csv')) {
+                    data = await processCSVFile(file);
+                } else if (file.name.toLowerCase().endsWith('.xlsx') || file.name.toLowerCase().endsWith('.xls')) {
+                    data = await processExcelFile(file);
+                } else {
+                    throw new Error('Unsupported file format. Please use CSV or Excel files.');
+                }
+
+                const validation = validateBulkData(data);
+                
+                if (validation.isValid) {
+                    // Process valid entries
+                    validation.validEntries.forEach(entry => {
+                        const workLogEntry = {
+                            id: Date.now() + Math.random(),
+                            startDate: entry['Start Date'],
+                            endDate: entry['End Date'],
+                            taskType: entry['Task Type'],
+                            timeTaken: parseInt(entry['Time Taken (Minutes)']),
+                            issueTask: entry['Issue/Task/Requirement'],
+                            originOfIssue: entry['Origin of the issue/Task/Requirement'],
+                            operatorRegion: entry['Operator/Region'],
+                            product: entry['Product'],
+                            taskIssueImpact: entry['Task/Issue Impact'],
+                            ticketInternalJira: entry['Ticket Internal Jira'] || '',
+                            ticketExternalIM: entry['Ticket External/IM'] || '',
+                            taskIssueOwner: entry['Task/Issue Owner'],
+                            status: entry['Status'],
+                            comments: entry['Comments'] || ''
+                        };
+                        workLogs.push(workLogEntry);
+                    });
+
+                    saveToStorage();
+                    updateAllViews();
+                    
+                    resultsDiv.innerHTML = `
+                        <div class="alert alert-success">
+                            <h4>✅ Bulk Upload Successful!</h4>
+                            <p><strong>${validation.validEntries.length}</strong> entries processed successfully.</p>
+                            ${validation.errors.length > 0 ? `<p><strong>${validation.errors.length}</strong> entries had errors and were skipped.</p>` : ''}
+                        </div>
+                        ${validation.errors.length > 0 ? '<div class="alert alert-warning"><h4>⚠️ Errors Found:</h4><ul>' + validation.errors.map(error => `<li>${error}</li>`).join('') + '</ul></div>' : ''}
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="alert alert-danger">
+                            <h4>❌ Format Validation Failed</h4>
+                            <p>The uploaded file has format issues:</p>
+                            <ul>${validation.errors.map(error => `<li>${error}</li>`).join('')}</ul>
+                            <p><strong>Please fix these issues and try again.</strong></p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        <h4>❌ Upload Failed</h4>
+                        <p>Error: ${error.message}</p>
+                        <p>Please check your file format and try again.</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function processCSVFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const csv = e.target.result;
+                        const lines = csv.split('\n');
+                        const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+                        const data = [];
+                        
+                        for (let i = 1; i < lines.length; i++) {
+                            if (lines[i].trim()) {
+                                const values = lines[i].split(',').map(v => v.replace(/"/g, '').trim());
+                                const row = {};
+                                headers.forEach((header, index) => {
+                                    row[header] = values[index] || '';
+                                });
+                                data.push(row);
+                            }
+                        }
+                        resolve(data);
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+                reader.onerror = () => reject(new Error('Failed to read CSV file'));
+                reader.readAsText(file);
+            });
+        }
+
+        async function processExcelFile(file) {
+            // For Excel processing, we'd typically use a library like SheetJS
+            // For now, show a message asking to convert to CSV
+            throw new Error('Excel files not supported in this demo. Please convert to CSV format.');
+        }
+
+        function validateBulkData(data) {
+            const requiredColumns = [
+                'Start Date', 'End Date', 'Task Type', 'Time Taken (Minutes)',
+                'Issue/Task/Requirement', 'Origin of the issue/Task/Requirement',
+                'Operator/Region', 'Product', 'Task/Issue Impact', 'Task/Issue Owner', 'Status'
+            ];
+            
+            const errors = [];
+            const validEntries = [];
+            
+            // Check if required columns exist
+            if (data.length === 0) {
+                errors.push('File is empty or invalid format');
+                return { isValid: false, errors, validEntries };
+            }
+            
+            const fileColumns = Object.keys(data[0]);
+            const missingColumns = requiredColumns.filter(col => !fileColumns.includes(col));
+            
+            if (missingColumns.length > 0) {
+                errors.push(`Missing required columns: ${missingColumns.join(', ')}`);
+                return { isValid: false, errors, validEntries };
+            }
+            
+            // Validate each row
+            data.forEach((row, index) => {
+                const rowNumber = index + 2; // +2 because index starts at 0 and we skip header
+                let rowErrors = [];
+                
+                // Required field validation
+                requiredColumns.forEach(col => {
+                    if (!row[col] || row[col].toString().trim() === '') {
+                        rowErrors.push(`Row ${rowNumber}: Missing ${col}`);
+                    }
+                });
+                
+                // Validate dropdown values
+                if (row['Task Type'] && !companyData.taskTypes.includes(row['Task Type'])) {
+                    rowErrors.push(`Row ${rowNumber}: Invalid Task Type '${row['Task Type']}'`);
+                }
+                
+                if (row['Task/Issue Owner'] && !companyData.taskOwners.includes(row['Task/Issue Owner'])) {
+                    rowErrors.push(`Row ${rowNumber}: Invalid Task Owner '${row['Task/Issue Owner']}'`);
+                }
+                
+                if (row['Product'] && !companyData.products.includes(row['Product'])) {
+                    rowErrors.push(`Row ${rowNumber}: Invalid Product '${row['Product']}'`);
+                }
+                
+                // Date validation
+                if (row['Start Date'] && isNaN(Date.parse(row['Start Date']))) {
+                    rowErrors.push(`Row ${rowNumber}: Invalid Start Date format`);
+                }
+                
+                if (row['End Date'] && isNaN(Date.parse(row['End Date']))) {
+                    rowErrors.push(`Row ${rowNumber}: Invalid End Date format`);
+                }
+                
+                // Time validation
+                if (row['Time Taken (Minutes)'] && (isNaN(row['Time Taken (Minutes)']) || parseInt(row['Time Taken (Minutes)']) <= 0)) {
+                    rowErrors.push(`Row ${rowNumber}: Invalid Time Taken value`);
+                }
+                
+                if (rowErrors.length === 0) {
+                    validEntries.push(row);
+                } else {
+                    errors.push(...rowErrors);
+                }
+            });
+            
+            return {
+                isValid: errors.length === 0 || validEntries.length > 0,
+                errors,
+                validEntries
+            };
         }
 
         function applyFilters() {
@@ -2067,52 +2413,318 @@
             document.body.insertAdjacentHTML('beforeend', textAreaDialog);
         }
 
-        function showDeploymentInstructions() {
-            const instructions = `
-            <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; justify-content: center; align-items: center;" onclick="this.remove()">
-                <div style="background: white; padding: 30px; border-radius: 15px; max-width: 800px; width: 90%; max-height: 80%; overflow-y: auto;" onclick="event.stopPropagation()">
-                    <h2>🚀 Deploy to SharePoint - Complete Guide</h2>
-                    
-                    <h3>Method 1: SharePoint Page (Easiest)</h3>
-                    <ol>
-                        <li><strong>Download the system file</strong> using the button below</li>
-                        <li><strong>Go to your SharePoint site:</strong> 
-                            <a href="https://digitral.sharepoint.com/sites/WorkLoggingSystem" target="_blank">WorkLoggingSystem</a>
-                        </li>
-                        <li><strong>Create new page:</strong> Click "New" → "Page" → "Blank"</li>
-                        <li><strong>Name it:</strong> "Work Logging Dashboard"</li>
-                        <li><strong>Add Embed web part:</strong> Click + → "Embed"</li>
-                        <li><strong>Upload the HTML file</strong> or paste the code</li>
-                        <li><strong>Publish the page</strong></li>
-                    </ol>
-                    
-                    <h3>Method 2: Document Library (Alternative)</h3>
-                    <ol>
-                        <li><strong>Go to Documents</strong> in your SharePoint site</li>
-                        <li><strong>Upload the HTML file</strong></li>
-                        <li><strong>Click on the file</strong> to open it</li>
-                        <li><strong>Share the file link</strong> with your team</li>
-                    </ol>
-                    
-                    <h3>Method 3: Local Network Deploy</h3>
-                    <ol>
-                        <li><strong>Save the HTML file</strong> to a shared network location</li>
-                        <li><strong>Team members open</strong> the file in their browsers</li>
-                        <li><strong>Full SharePoint integration</strong> will work</li>
-                    </ol>
-                    
-                    <div style="margin-top: 20px; padding: 15px; background: #e8f5e8; border-radius: 8px;">
-                        <strong>✅ Recommended:</strong> Method 1 (SharePoint Page) for best integration and security.
-                    </div>
-                    
-                    <div style="margin-top: 20px; text-align: center;">
-                        <button class="btn btn-success" onclick="downloadCompleteSystem()" style="margin-right: 10px;">📥 Download System File</button>
-                        <button class="btn" onclick="this.closest('div[style*=\"position: fixed\"]').remove()">Close</button>
+        function generateSPFxPackage() {
+            const spfxCode = `
+// SharePoint Framework Web Part Package
+// File: src/webparts/workLogging/WorkLoggingWebPart.ts
+
+import { Version } from '@microsoft/sp-core-library';
+import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
+import { IPropertyPaneConfiguration, PropertyPaneTextField } from '@microsoft/sp-property-pane';
+
+export interface IWorkLoggingWebPartProps {
+  description: string;
+}
+
+export default class WorkLoggingWebPart extends BaseClientSideWebPart<IWorkLoggingWebPartProps> {
+
+  public render(): void {
+    this.domElement.innerHTML = \`
+      ${document.querySelector('.container').outerHTML.replace(/`/g, '\\`')}
+      
+      <script>
+        ${document.querySelector('script').innerHTML.replace(/`/g, '\\`')}
+      </script>
+      
+      <style>
+        ${document.querySelector('style').innerHTML.replace(/`/g, '\\`')}
+      </style>
+    \`;
+  }
+
+  protected get dataVersion(): Version {
+    return Version.parse('1.0');
+  }
+
+  protected getPropertyPaneConfiguration(): IPropertyPaneConfiguration {
+    return {
+      pages: [
+        {
+          header: {
+            description: 'Work Logging System Settings'
+          },
+          groups: [
+            {
+              groupName: 'Basic Settings',
+              groupFields: [
+                PropertyPaneTextField('description', {
+                  label: 'Description'
+                })
+              ]
+            }
+          ]
+        }
+      ]
+    };
+  }
+}
+`;
+
+            // Create package.json
+            const packageJson = `{
+  "name": "digitral-work-logging-system",
+  "version": "1.0.0",
+  "description": "Digital Work and Leave Logging System for SharePoint",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "gulp bundle",
+    "clean": "gulp clean",
+    "test": "gulp test"
+  },
+  "dependencies": {
+    "@microsoft/sp-core-library": "1.18.2",
+    "@microsoft/sp-property-pane": "1.18.2",
+    "@microsoft/sp-webpart-base": "1.18.2"
+  },
+  "devDependencies": {
+    "@microsoft/sp-build-web": "1.18.2",
+    "@microsoft/sp-tslint-rules": "1.18.2",
+    "@microsoft/sp-module-interfaces": "1.18.2",
+    "@types/webpack-env": "1.13.1",
+    "gulp": "4.0.2"
+  }
+}`;
+
+            showSPFxInstructions(spfxCode, packageJson);
+        }
+
+        function showSPFxInstructions(spfxCode, packageJson) {
+            const dialog = `
+                <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 3000; display: flex; justify-content: center; align-items: center;" onclick="this.remove()">
+                    <div style="background: white; padding: 20px; border-radius: 15px; max-width: 95%; width: 1000px; max-height: 95%; overflow-y: auto;" onclick="event.stopPropagation()">
+                        <h2>🚀 SharePoint Framework (SPFx) Package</h2>
+                        <p>This creates a professional SharePoint web part:</p>
+                        
+                        <div style="background: #f0f8ff; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                            <h3>📋 Deployment Instructions:</h3>
+                            <ol style="text-align: left; margin: 10px 0;">
+                                <li><strong>Install Node.js</strong> and SharePoint Framework</li>
+                                <li><strong>Create SPFx project:</strong> <code>yo @microsoft/sharepoint</code></li>
+                                <li><strong>Replace web part code</strong> with the generated code</li>
+                                <li><strong>Build and deploy:</strong> <code>gulp build && gulp bundle --ship && gulp package-solution --ship</code></li>
+                                <li><strong>Upload .sppkg</strong> to SharePoint App Catalog</li>
+                                <li><strong>Add web part</strong> to any SharePoint page</li>
+                            </ol>
+                        </div>
+                        
+                        <h3>Alternative: Simpler Methods</h3>
+                        <div style="display: flex; gap: 10px; margin: 15px 0;">
+                            <button class="btn btn-success" onclick="showSimpleDeployment()">📋 Simple Deployment Guide</button>
+                            <button class="btn btn-secondary" onclick="downloadStandaloneFile()">📥 Download Standalone File</button>
+                        </div>
+                        
+                        <div style="margin-top: 20px; text-align: center;">
+                            <button class="btn" onclick="this.closest('div[style*=\"position: fixed\"]').remove()">Close</button>
+                        </div>
                     </div>
                 </div>
-            </div>`;
+            `;
             
-            document.body.insertAdjacentHTML('beforeend', instructions);
+            document.body.insertAdjacentHTML('beforeend', dialog);
+        }
+
+        function showSimpleDeployment() {
+            const simpleDialog = `
+                <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 4000; display: flex; justify-content: center; align-items: center;" onclick="this.remove()">
+                    <div style="background: white; padding: 25px; border-radius: 15px; max-width: 90%; width: 800px; max-height: 90%; overflow-y: auto;" onclick="event.stopPropagation()">
+                        <h2>✅ Simple SharePoint Deployment</h2>
+                        
+                        <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                            <h3>📋 Method 1: Document Library (EASIEST)</h3>
+                            <ol style="text-align: left;">
+                                <li><strong>Download the HTML file</strong> (button below)</li>
+                                <li><strong>Go to SharePoint:</strong> <a href="https://digitral.sharepoint.com/sites/WorkLoggingSystem" target="_blank">Your Site</a></li>
+                                <li><strong>Click "Documents"</strong> → <strong>"Upload"</strong> → <strong>"Files"</strong></li>
+                                <li><strong>Upload the HTML file</strong></li>
+                                <li><strong>Click on the file</strong> to open it in browser</li>
+                                <li><strong>Share the link</strong> with your team</li>
+                            </ol>
+                        </div>
+                        
+                        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                            <h3>📋 Method 2: SharePoint Page with HTML</h3>
+                            <ol style="text-align: left;">
+                                <li><strong>Go to SharePoint site</strong></li>
+                                <li><strong>New → Page → Blank</strong></li>
+                                <li><strong>Add "Script Editor" web part</strong> (if available)</li>
+                                <li><strong>Paste HTML code</strong> directly</li>
+                                <li><strong>Save and publish</strong></li>
+                            </ol>
+                        </div>
+                        
+                        <div style="background: #d1ecf1; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                            <h3>📋 Method 3: External Hosting + Iframe</h3>
+                            <ol style="text-align: left;">
+                                <li><strong>Host HTML file</strong> on OneDrive or external server</li>
+                                <li><strong>Get shareable link</strong></li>
+                                <li><strong>Use SharePoint Embed web part</strong> with iframe URL</li>
+                            </ol>
+                        </div>
+                        
+                        <div style="text-align: center; margin-top: 20px;">
+                            <button class="btn btn-success" onclick="downloadStandaloneFile()" style="margin-right: 10px;">📥 Download HTML File</button>
+                            <button class="btn" onclick="this.closest('div[style*=\"position: fixed\"]').remove()">Close</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', simpleDialog);
+        }
+
+        function downloadSharePointCompatibleFile() {
+            try {
+                const completeHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digitral Work Logging System</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    ${document.querySelector('style').outerHTML}
+</head>
+<body>
+    ${document.querySelector('.container').outerHTML}
+    ${document.querySelector('script').outerHTML}
+</body>
+</html>`;
+                
+                const blob = new Blob([completeHTML], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'work-logging-system.aspx'; // SharePoint-compatible extension
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                showAlert('✅ SharePoint-compatible .aspx file downloaded!', 'success');
+            } catch (error) {
+                showAlert('❌ Download failed. Try the text method instead.', 'danger');
+            }
+        }
+
+        function showOneDriveConverter() {
+            const converterDialog = `
+                <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 3000; display: flex; justify-content: center; align-items: center;">
+                    <div style="background: white; padding: 25px; border-radius: 15px; max-width: 90%; width: 700px; max-height: 90%; overflow-y: auto;" onclick="event.stopPropagation()">
+                        <h2>🔗 OneDrive Link to Embed Converter</h2>
+                        
+                        <div style="background: #e8f4fd; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                            <h3>📋 Step 1: Upload to OneDrive</h3>
+                            <ol style="text-align: left; margin: 10px 0;">
+                                <li>Go to <strong>OneDrive</strong> (office.com → OneDrive)</li>
+                                <li>Upload your <strong>work-logging-system.aspx</strong> file</li>
+                                <li>Right-click the file → <strong>"Share"</strong></li>
+                                <li>Set to <strong>"Anyone with the link can view"</strong></li>
+                                <li>Copy the sharing link</li>
+                            </ol>
+                        </div>
+                        
+                        <div style="background: #f0f8ff; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                            <h3>🔄 Step 2: Convert Link</h3>
+                            <div style="margin: 10px 0;">
+                                <label><strong>Paste your OneDrive share link here:</strong></label>
+                                <input type="text" id="oneDriveLink" placeholder="https://1drv.ms/... or https://onedrive.live.com/..." 
+                                       style="width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px;">
+                            </div>
+                            <button class="btn btn-success" onclick="convertToEmbed()" style="margin: 10px 0;">🔄 Convert to Embed URL</button>
+                        </div>
+                        
+                        <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                            <h3>📋 Step 3: Embed URL Result</h3>
+                            <div style="margin: 10px 0;">
+                                <label><strong>Use this URL in SharePoint Embed web part:</strong></label>
+                                <textarea id="embedResult" readonly 
+                                         style="width: 100%; height: 80px; padding: 8px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; font-size: 12px;"
+                                         placeholder="Converted embed URL will appear here..."></textarea>
+                            </div>
+                            <button class="btn btn-secondary" onclick="copyEmbedURL()" style="margin: 5px 0;">📋 Copy Embed URL</button>
+                        </div>
+                        
+                        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                            <h3>⚠️ Important Notes:</h3>
+                            <ul style="text-align: left; margin: 10px 0;">
+                                <li>Make sure file sharing is set to <strong>"Anyone with link"</strong></li>
+                                <li>The embed URL should start with <strong>https://onedrive.live.com/embed</strong></li>
+                                <li>Test the embed URL in a new browser tab first</li>
+                            </ul>
+                        </div>
+                        
+                        <div style="text-align: center; margin-top: 20px;">
+                            <button class="btn" onclick="this.closest('div[style*=\"position: fixed\"]').remove()">Close</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', converterDialog);
+        }
+
+        function convertToEmbed() {
+            const inputLink = document.getElementById('oneDriveLink').value.trim();
+            const resultArea = document.getElementById('embedResult');
+            
+            if (!inputLink) {
+                alert('Please paste your OneDrive share link first');
+                return;
+            }
+            
+            let embedUrl = '';
+            
+            try {
+                if (inputLink.includes('1drv.ms')) {
+                    // Short link - needs to be expanded first
+                    embedUrl = 'Please expand this short link first by pasting it in a browser, then use the full URL that appears.';
+                } else if (inputLink.includes('onedrive.live.com/redir')) {
+                    // Standard OneDrive share link
+                    embedUrl = inputLink.replace('/redir?', '/embed?') + '&em=2&wdStartOn=1';
+                } else if (inputLink.includes('sharepoint.com') && inputLink.includes('guestaccess.aspx')) {
+                    // SharePoint OneDrive link
+                    embedUrl = inputLink.replace('guestaccess.aspx', 'embed.aspx') + '&action=embedview';
+                } else {
+                    embedUrl = 'Unrecognized link format. Please make sure you are using a OneDrive share link.';
+                }
+                
+                resultArea.value = embedUrl;
+                
+                if (embedUrl.startsWith('https://')) {
+                    showAlert('✅ Link converted successfully! Copy the embed URL and use it in SharePoint.', 'success');
+                } else {
+                    showAlert('⚠️ ' + embedUrl, 'warning');
+                }
+                
+            } catch (error) {
+                resultArea.value = 'Error converting link. Please check the format and try again.';
+                showAlert('❌ Error converting link', 'danger');
+            }
+        }
+
+        function copyEmbedURL() {
+            const resultArea = document.getElementById('embedResult');
+            if (resultArea.value && resultArea.value.startsWith('https://')) {
+                resultArea.select();
+                try {
+                    document.execCommand('copy');
+                    showAlert('📋 Embed URL copied to clipboard!', 'success');
+                } catch (error) {
+                    showAlert('Please select the text and copy manually (Ctrl+C)', 'warning');
+                }
+            } else {
+                showAlert('Please convert a link first', 'warning');
+            }
         }
 
         function downloadSetupData() {
