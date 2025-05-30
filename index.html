@@ -369,8 +369,8 @@
                     <span id="currentDate"></span>
                 </div>
                 <div>
-                    <button class="btn btn-success" id="sharepointSetupBtn" onclick="showSharePointSetup()">ðŸ”— Setup SharePoint</button>
-                    <button class="btn btn-secondary" onclick="exportData()">ðŸ“Š Export Report</button>
+                    <button class="btn btn-success" id="sharepointSetupBtn" onclick="showSharePointSetup()">🔗 Setup SharePoint</button>
+                    <button class="btn btn-secondary" onclick="exportData()">📊 Export Report</button>
                 </div>
             </div>
         </div>
@@ -804,12 +804,12 @@
         <!-- SharePoint Setup Tab -->
         <div id="sharepoint-setup" class="tab-content">
             <div class="setup-guide">
-                <h2>ðŸš€ SharePoint Integration Setup</h2>
+                <h2>🚀 SharePoint Integration Setup</h2>
                 <p style="margin-bottom: 20px;">Follow these steps to connect your work logging system to SharePoint:</p>
 
                 <div class="setup-step">
                     <h4><span class="step-number">1</span>Create SharePoint Site</h4>
-                    <p>Go to SharePoint â†’ Create Site â†’ Team Site</p>
+                    <p>Go to SharePoint → Create Site → Team Site</p>
                     <p>Name it something like "Work Logging System"</p>
                     <button class="btn btn-secondary" onclick="window.open('https://sharepoint.com', '_blank')">Open SharePoint</button>
                 </div>
@@ -836,7 +836,7 @@
 
                 <div class="setup-step">
                     <h4><span class="step-number">4</span>Set Team Permissions</h4>
-                    <p>In SharePoint, go to Site Settings â†’ Site Permissions</p>
+                    <p>In SharePoint, go to Site Settings → Site Permissions</p>
                     <p>Add your team members with "Contribute" permissions</p>
                     <button class="btn btn-secondary" onclick="showPermissionGuide()">Permission Guide</button>
                 </div>
@@ -846,8 +846,8 @@
                 </div>
 
                 <div style="margin-top: 20px;">
-                    <button class="btn btn-success" onclick="showDeploymentInstructions()">ðŸ“‹ Complete Deployment Guide</button>
-                    <button class="btn" onclick="downloadCompleteSystem()">ðŸ“¥ Download System File</button>
+                    <button class="btn btn-success" onclick="showDeploymentInstructions()">📋 Complete Deployment Guide</button>
+                    <button class="btn" onclick="downloadCompleteSystem()">📥 Download System File</button>
                 </div>
             </div>
         </div>
@@ -933,7 +933,7 @@
             const infoDiv = document.createElement('div');
             infoDiv.className = 'alert alert-info';
             infoDiv.innerHTML = `
-                <strong>ðŸ“ Data Storage Info:</strong> 
+                <strong>📝 Data Storage Info:</strong> 
                 Data is stored in session memory and will reset when you refresh the page. 
                 For permanent storage, set up SharePoint integration using the "SharePoint Setup" tab.
             `;
@@ -1581,7 +1581,7 @@
                 if (!hasRecentLog) {
                     const alert = document.createElement('div');
                     alert.className = 'alert alert-warning';
-                    alert.textContent = `âš ï¸ ${employee.name} has not logged any work in the past week`;
+                    alert.textContent = `⚠️ ${employee.name} has not logged any work in the past week`;
                     alertsContainer.appendChild(alert);
                 }
             });
@@ -1842,7 +1842,7 @@
         // Live SharePoint integration functions
         async function connectToLiveSharePoint() {
             const resultDiv = document.getElementById('connectionResult');
-            resultDiv.innerHTML = '<p style="color: blue;">ðŸ”„ Connecting to SharePoint...</p>';
+            resultDiv.innerHTML = '<p style="color: blue;">🔄 Connecting to SharePoint...</p>';
             
             try {
                 // Test connection to your live SharePoint site
@@ -1856,7 +1856,7 @@
                 });
 
                 if (response.ok) {
-                    resultDiv.innerHTML = '<p style="color: green;">âœ… Successfully connected to SharePoint!</p>';
+                    resultDiv.innerHTML = '<p style="color: green;">✅ Successfully connected to SharePoint!</p>';
                     
                     // Now create the required lists
                     await createSharePointLists();
@@ -1864,19 +1864,19 @@
                     isSharePointEnabled = true;
                     sharepointSiteUrl = SHAREPOINT_CONFIG.siteUrl;
                     
-                    document.getElementById('sharepointSetupBtn').innerHTML = 'âœ… SharePoint Connected';
+                    document.getElementById('sharepointSetupBtn').innerHTML = '✅ SharePoint Connected';
                     document.getElementById('sharepointSetupBtn').className = 'btn btn-success';
                     
                     // Update connection status
                     document.getElementById('connectionStatus').innerHTML = `
-                        <strong>Status:</strong> âœ… Connected to https://digitral.sharepoint.com/sites/WorkLoggingSystem
+                        <strong>Status:</strong> ✅ Connected to https://digitral.sharepoint.com/sites/WorkLoggingSystem
                         <br><small>Lists created successfully. Ready for production use!</small>
                     `;
                     document.getElementById('connectionStatus').className = 'alert alert-success';
                     
                 } else if (response.status === 403) {
                     resultDiv.innerHTML = `
-                        <p style="color: orange;">âš ï¸ Permission required</p>
+                        <p style="color: orange;">⚠️ Permission required</p>
                         <p>Please ensure you have access to the SharePoint site and try again.</p>
                         <button class="btn" onclick="window.open('${SHAREPOINT_CONFIG.siteUrl}', '_blank')">Open SharePoint Site</button>
                     `;
@@ -1887,10 +1887,10 @@
             } catch (error) {
                 console.error('SharePoint connection error:', error);
                 resultDiv.innerHTML = `
-                    <p style="color: red;">âŒ Connection failed</p>
+                    <p style="color: red;">❌ Connection failed</p>
                     <p>This might be due to browser security restrictions. The system will work in demo mode.</p>
                     <p><strong>Alternative:</strong> Save the system as an HTML file and open it from your local computer for full SharePoint integration.</p>
-                    <button class="btn btn-secondary" onclick="downloadSystemFile()">ðŸ“¥ Download System File</button>
+                    <button class="btn btn-secondary" onclick="downloadSystemFile()">📥 Download System File</button>
                 `;
             }
         }
@@ -1996,15 +1996,15 @@
             const codeDialog = `
                 <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 3000; display: flex; justify-content: center; align-items: center;" onclick="this.remove()">
                     <div style="background: white; padding: 20px; border-radius: 15px; max-width: 90%; width: 800px; max-height: 90%; overflow-y: auto;" onclick="event.stopPropagation()">
-                        <h2>ðŸ“‹ Copy System Code</h2>
+                        <h2>📋 Copy System Code</h2>
                         <p>Since download isn't working, you can copy the complete code manually:</p>
                         
                         <h3>Method 1: Copy All Code</h3>
-                        <button class="btn btn-success" onclick="copySystemCode()" style="margin-bottom: 15px;">ðŸ“‹ Copy Complete HTML Code</button>
+                        <button class="btn btn-success" onclick="copySystemCode()" style="margin-bottom: 15px;">📋 Copy Complete HTML Code</button>
                         
                         <h3>Method 2: Manual Steps</h3>
                         <ol style="text-align: left;">
-                            <li><strong>Right-click</strong> on this page â†’ <strong>"View Page Source"</strong></li>
+                            <li><strong>Right-click</strong> on this page → <strong>"View Page Source"</strong></li>
                             <li><strong>Select All</strong> (Ctrl+A) and <strong>Copy</strong> (Ctrl+C)</li>
                             <li><strong>Create new .html file</strong> on your computer</li>
                             <li><strong>Paste the code</strong> and save as "work-logging-system.html"</li>
@@ -2013,7 +2013,7 @@
                         <h3>Method 3: SharePoint Direct Upload</h3>
                         <ol style="text-align: left;">
                             <li><strong>Go to your SharePoint site</strong></li>
-                            <li><strong>Create new page:</strong> New â†’ Page â†’ Blank</li>
+                            <li><strong>Create new page:</strong> New → Page → Blank</li>
                             <li><strong>Add Embed web part</strong></li>
                             <li><strong>Paste the HTML code</strong> directly</li>
                         </ol>
@@ -2053,11 +2053,11 @@
             const textAreaDialog = `
                 <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 4000; display: flex; justify-content: center; align-items: center;" onclick="this.remove()">
                     <div style="background: white; padding: 20px; border-radius: 15px; max-width: 95%; width: 1000px; max-height: 95%; overflow: hidden; display: flex; flex-direction: column;" onclick="event.stopPropagation()">
-                        <h2>ðŸ“‹ Complete System Code</h2>
+                        <h2>📋 Complete System Code</h2>
                         <p>Select all text below and copy (Ctrl+A, then Ctrl+C):</p>
                         <textarea style="width: 100%; height: 500px; font-family: monospace; font-size: 12px; border: 1px solid #ccc; padding: 10px;" readonly>${htmlCode.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
                         <div style="margin-top: 15px; text-align: center;">
-                            <button class="btn btn-success" onclick="navigator.clipboard.writeText(this.parentElement.parentElement.querySelector('textarea').value.replace(/&lt;/g, '<').replace(/&gt;/g, '>')).then(() => alert('Copied to clipboard!')).catch(() => alert('Please select all text and copy manually'))">ðŸ“‹ Copy Code</button>
+                            <button class="btn btn-success" onclick="navigator.clipboard.writeText(this.parentElement.parentElement.querySelector('textarea').value.replace(/&lt;/g, '<').replace(/&gt;/g, '>')).then(() => alert('Copied to clipboard!')).catch(() => alert('Please select all text and copy manually'))">📋 Copy Code</button>
                             <button class="btn" onclick="this.closest('div[style*=\"position: fixed\"]').remove()" style="margin-left: 10px;">Close</button>
                         </div>
                     </div>
@@ -2071,7 +2071,7 @@
             const instructions = `
             <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; justify-content: center; align-items: center;" onclick="this.remove()">
                 <div style="background: white; padding: 30px; border-radius: 15px; max-width: 800px; width: 90%; max-height: 80%; overflow-y: auto;" onclick="event.stopPropagation()">
-                    <h2>ðŸš€ Deploy to SharePoint - Complete Guide</h2>
+                    <h2>🚀 Deploy to SharePoint - Complete Guide</h2>
                     
                     <h3>Method 1: SharePoint Page (Easiest)</h3>
                     <ol>
@@ -2079,9 +2079,9 @@
                         <li><strong>Go to your SharePoint site:</strong> 
                             <a href="https://digitral.sharepoint.com/sites/WorkLoggingSystem" target="_blank">WorkLoggingSystem</a>
                         </li>
-                        <li><strong>Create new page:</strong> Click "New" â†’ "Page" â†’ "Blank"</li>
+                        <li><strong>Create new page:</strong> Click "New" → "Page" → "Blank"</li>
                         <li><strong>Name it:</strong> "Work Logging Dashboard"</li>
-                        <li><strong>Add Embed web part:</strong> Click + â†’ "Embed"</li>
+                        <li><strong>Add Embed web part:</strong> Click + → "Embed"</li>
                         <li><strong>Upload the HTML file</strong> or paste the code</li>
                         <li><strong>Publish the page</strong></li>
                     </ol>
@@ -2102,11 +2102,11 @@
                     </ol>
                     
                     <div style="margin-top: 20px; padding: 15px; background: #e8f5e8; border-radius: 8px;">
-                        <strong>âœ… Recommended:</strong> Method 1 (SharePoint Page) for best integration and security.
+                        <strong>✅ Recommended:</strong> Method 1 (SharePoint Page) for best integration and security.
                     </div>
                     
                     <div style="margin-top: 20px; text-align: center;">
-                        <button class="btn btn-success" onclick="downloadCompleteSystem()" style="margin-right: 10px;">ðŸ“¥ Download System File</button>
+                        <button class="btn btn-success" onclick="downloadCompleteSystem()" style="margin-right: 10px;">📥 Download System File</button>
                         <button class="btn" onclick="this.closest('div[style*=\"position: fixed\"]').remove()">Close</button>
                     </div>
                 </div>
@@ -2146,7 +2146,7 @@
             alert(`SharePoint Permissions Guide:
 
 1. Go to your SharePoint site
-2. Click the gear icon (Settings) â†’ Site permissions
+2. Click the gear icon (Settings) → Site permissions
 3. Click "Invite people"
 4. Add team members' email addresses
 5. Set permission level to "Contribute"
