@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work Log System - Complete Interface</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sp-pnp-js/3.12.0/pnp.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            color: #2c5aa0;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .connection-status {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .status-info {
+            flex: 1;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        .status-connected {
+            background: #28a745;
+        }
+        
+        .status-disconnected {
+            background: #dc3545;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-tab {
+            background: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .nav-tab.active {
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            color: white;
+            transform: translateY(-3px);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .work-log-form {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-group label.required::after {
+            content: " *";
+            color: #dc3545;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e6ed;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+        
+        .management-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+        }
+        
+        .section-title {
+            color: #1f4788;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .data-table th {
+            background: #4a90e2;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .data-table tr:hover {
+            background: #f8f9ff;
+        }
+        
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4a90e2;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: none;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .form-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .time-display {
+            background: #f8f9ff;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            color: #4a90e2;
+            margin: 10px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .connection-status {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Work Log System - Complete Interface</h1>
+            <p>Add work logs, manage team members, and handle all operations through this interface</p>
+        </div>
+        
+        <!-- Connection Status -->
+        <div class="connection-status">
+            <div class="status-info">
+                <span class="status-indicator status-disconnected" id="connectionStatus"></span>
+                <span id="connectionText">Connecting to SharePoint...</span>
+            </div>
+            <div>
+                <button class="btn btn-primary" onclick="initializeConnection()">🔌 Connect to SharePoint</button>
+                <button class="btn btn-success" onclick="testConnection()">🧪 Test Connection</button>
+            </div>
+        </div>
+        
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('worklog')">📝 Daily Work Log</button>
+            <button class="nav-tab" onclick="showTab('team')">👥 Team Management</button>
+            <button class="nav-tab" onclick="showTab('master')">📋 Master Data</button>
+            <button class="nav-tab" onclick="showTab('reports')">📊 Reports & Views</button>
+        </div>
+        
+        <!-- Work Log Tab -->
+        <div id="worklog" class="tab-content active">
+            <div class="work-log-form">
+                <h2 style="margin-bottom: 25px; color: #1f4788;">📝 Add Work Log Entry</h2>
+                
+                <div class="alert alert-success" id="worklogSuccess"></div>
+                <div class="alert alert-error" id="worklogError"></div>
+                
+                <form id="workLogForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="startDateTime" class="required">Start Date & Time</label>
+                            <input type="datetime-local" id="startDateTime" name="startDateTime" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="endDateTime" class="required">End Date & Time</label>
+                            <input type="datetime-local" id="endDateTime" name="endDateTime" required>
+                        </div>
+                    </div>
+                    
+                    <div class="time-display" id="timeDisplay">
+                        Time Duration: <span id="timeDuration">Please select start and end times</span>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="taskType" class="required">Task Type</label>
+                            <select id="taskType" name="taskType" required>
+                                <option value="">Loading task types...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="origin" class="required">Origin</label>
+                            <select id="origin" name="origin" required>
+                                <option value="">Loading origins...</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="operatorRegion" class="required">Operator/Region</label>
+                            <select id="operatorRegion" name="operatorRegion" required>
+                                <option value="">Loading operators...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="product" class="required">Product</label>
+                            <select id="product" name="product" required>
+                                <option value="">Loading products...</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="impact" class="required">Task/Issue Impact</label>
+                            <select id="impact" name="impact" required>
+                                <option value="">Loading impact levels...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="status" class="required">Status</label>
+                            <select id="status" name="status" required>
+                                <option value="">Select Status</option>
+                                <option value="Completed">Completed</option>
+                                <option value="Pending">Pending</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="issueDescription" class="required">Issue/Task/Requirement Description</label>
+                        <textarea id="issueDescription" name="issueDescription" required rows="4" 
+                                  placeholder="Describe the task or issue you worked on..."></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="internalJira">Ticket Internal Jira</label>
+                            <input type="text" id="internalJira" name="internalJira" placeholder="JIRA-2024-001">
+                        </div>
+                        <div class="form-group">
+                            <label for="externalJira">Ticket External/IM</label>
+                            <input type="text" id="externalJira" name="externalJira" placeholder="EXT-567">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="comments">Comments</label>
+                        <textarea id="comments" name="comments" rows="3" placeholder="Additional comments or notes..."></textarea>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 25px;">
+                        <button type="submit" class="btn btn-success" style="padding: 15px 40px; font-size: 16px;">
+                            ✅ Save Work Log Entry
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="clearWorkLogForm()">🗑️ Clear Form</button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Recent Work Logs -->
+            <div class="management-section">
+                <div class="section-header">
+                    <div class="section-title">📋 Recent Work Log Entries</div>
+                    <button class="btn btn-primary" onclick="loadRecentWorkLogs()">🔄 Refresh</button>
+                </div>
+                
+                <div class="loading-spinner" id="worklogLoading">
+                    <div class="spinner"></div>
+                    <p>Loading work logs...</p>
+                </div>
+                
+                <div id="recentWorkLogsContainer">
+                    <table class="data-table" id="recentWorkLogsTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Task Type</th>
+                                <th>Description</th>
+                                <th>Duration</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentWorkLogsBody">
+                            <!-- Data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Team Management Tab -->
+        <div id="team" class="tab-content">
+            <div class="management-section">
+                <div class="section-header">
+                    <div class="section-title">👥 Team Members Management</div>
+                    <button class="btn btn-success" onclick="openAddTeamMemberModal()">+ Add Team Member</button>
+                </div>
+                
+                <div class="loading-spinner" id="teamLoading">
+                    <div class="spinner"></div>
+                    <p>Loading team members...</p>
+                </div>
+                
+                <div id="teamMembersContainer">
+                    <table class="data-table" id="teamMembersTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Role</th>
+                                <th>Team Lead</th>
+                                <th>Assigned Operators</th>
+                                <th>Assigned Products</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teamMembersBody">
+                            <!-- Data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Master Data Tab -->
+        <div id="master" class="tab-content">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                <!-- Task Types -->
+                <div class="management-section">
+                    <div class="section-header">
+                        <div class="section-title">📝 Task Types</div>
+                        <button class="btn btn-success" onclick="openAddMasterDataModal('tasktype')">+ Add</button>
+                    </div>
+                    <div id="taskTypesContainer">
+                        <div class="loading-spinner" id="taskTypesLoading">
+                            <div class="spinner"></div>
+                        </div>
+                        <div id="taskTypesList"></div>
+                    </div>
+                </div>
+                
+                <!-- Operators -->
+                <div class="management-section">
+                    <div class="section-header">
+                        <div class="section-title">🌍 Operators</div>
+                        <button class="btn btn-success" onclick="openAddMasterDataModal('operator')">+ Add</button>
+                    </div>
+                    <div id="operatorsContainer">
+                        <div class="loading-spinner" id="operatorsLoading">
+                            <div class="spinner"></div>
+                        </div>
+                        <div id="operatorsList"></div>
+                    </div>
+                </div>
+                
+                <!-- Products -->
+                <div class="management-section">
+                    <div class="section-header">
+                        <div class="section-title">🛍️ Products</div>
+                        <button class="btn btn-success" onclick="openAddMasterDataModal('product')">+ Add</button>
+                    </div>
+                    <div id="productsContainer">
+                        <div class="loading-spinner" id="productsLoading">
+                            <div class="spinner"></div>
+                        </div>
+                        <div id="productsList"></div>
+                    </div>
+                </div>
+                
+                <!-- Origins -->
+                <div class="management-section">
+                    <div class="section-header">
+                        <div class="section-title">📍 Origins</div>
+                        <button class="btn btn-success" onclick="openAddMasterDataModal('origin')">+ Add</button>
+                    </div>
+                    <div id="originsContainer">
+                        <div class="loading-spinner" id="originsLoading">
+                            <div class="spinner"></div>
+                        </div>
+                        <div id="originsList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Reports Tab -->
+        <div id="reports" class="tab-content">
+            <div class="management-section">
+                <div class="section-header">
+                    <div class="section-title">📊 Reports and Analytics</div>
+                    <button class="btn btn-primary" onclick="generateWeeklyReport()">📅 Weekly Report</button>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                    <div style="background: #f8f9ff; padding: 20px; border-radius: 10px; text-align: center;">
+                        <div style="font-size: 2em; font-weight: bold; color: #4a90e2;" id="totalHours">0</div>
+                        <div style="color: #666;">Total Hours This Week</div>
+                    </div>
+                    <div style="background: #f8f9ff; padding: 20px; border-radius: 10px; text-align: center;">
+                        <div style="font-size: 2em; font-weight: bold; color: #28a745;" id="completedTasks">0</div>
+                        <div style="color: #666;">Completed Tasks</div>
+                    </div>
+                    <div style="background: #f8f9ff; padding: 20px; border-radius: 10px; text-align: center;">
+                        <div style="font-size: 2em; font-weight: bold; color: #ffc107;" id="pendingTasks">0</div>
+                        <div style="color: #666;">Pending Tasks</div>
+                    </div>
+                    <div style="background: #f8f9ff; padding: 20px; border-radius: 10px; text-align: center;">
+                        <div style="font-size: 2em; font-weight: bold; color: #dc3545;" id="criticalIssues">0</div>
+                        <div style="color: #666;">Critical Issues</div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center;">
+                    <button class="btn btn-success" onclick="exportToExcel()">📊 Export to Excel</button>
+                    <button class="btn btn-primary" onclick="viewWeeklyData()">📅 View Weekly Data</button>
+                    <button class="btn btn-primary" onclick="viewMonthlyData()">📆 View Monthly Data</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Team Member Modal -->
+    <div id="teamMemberModal" class="form-modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('teamMemberModal')">&times;</button>
+            <h3>👥 Add New Team Member</h3>
+            
+            <div class="alert alert-success" id="teamMemberSuccess"></div>
+            <div class="alert alert-error" id="teamMemberError"></div>
+            
+            <form id="teamMemberForm">
+                <div class="form-group">
+                    <label for="employeeName" class="required">Full Name</label>
+                    <input type="text" id="employeeName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="employeeEmail" class="required">Email Address</label>
+                    <input type="email" id="employeeEmail" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="roleLevel" class="required">Role Level</label>
+                    <select id="roleLevel" required>
+                        <option value="">Select Role</option>
+                        <option value="Junior">Junior</option>
+                        <option value="Senior">Senior</option>
+                        <option value="Team Lead">Team Lead</option>
+                        <option value="Manager">Manager</option>
+                        <option value="HOD">HOD</option>
+                        <option value="CEO">CEO</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="assignedOperators">Assigned Operators</label>
+                    <textarea id="assignedOperators" rows="3" placeholder="Enter 'ALL' or comma-separated operators: ORD Myanmar, BSNL India"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="assignedProducts">Assigned Products</label>
+                    <textarea id="assignedProducts" rows="3" placeholder="Enter 'ALL' or comma-separated products: Selfcare, B2B App"></textarea>
+                </div>
+                
+                <div style="text-align: center; margin-top: 25px;">
+                    <button type="submit" class="btn btn-success">💾 Save Team Member</button>
+                    <button type="button" class="btn btn-danger" onclick="closeModal('teamMemberModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Add Master Data Modal -->
+    <div id="masterDataModal" class="form-modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('masterDataModal')">&times;</button>
+            <h3 id="masterDataModalTitle">Add New Item</h3>
+            
+            <div class="alert alert-success" id="masterDataSuccess"></div>
+            <div class="alert alert-error" id="masterDataError"></div>
+            
+            <form id="masterDataForm">
+                <div class="form-group">
+                    <label for="itemTitle" class="required">Name/Title</label>
+                    <input type="text" id="itemTitle" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="displayOrder">Display Order</label>
+                    <input type="number" id="displayOrder" min="1">
+                </div>
+                
+                <div style="text-align: center; margin-top: 25px;">
+                    <button type="submit" class="btn btn-success">💾 Save Item</button>
+                    <button type="button" class="btn btn-danger" onclick="closeModal('masterDataModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // SharePoint Configuration - UPDATE THIS WITH YOUR SITE URL
+        const SHAREPOINT_CONFIG = {
+            siteUrl: 'https://digitral.sharepoint.com/sites/ServiceDeliveryTeamWorkLog', // UPDATE THIS
+            lists: {
+                workLogEntries: 'WorkLogEntries',
+                taskTypes: 'TaskTypes',
+                originSources: 'OriginSources',
+                operatorsRegions: 'OperatorsRegions',
+                products: 'Products',
+                impactLevels: 'ImpactLevels',
+                teamMembers: 'TeamMembers',
+                leaveTypes: 'LeaveTypes'
+            }
+        };
+        
+        // Global variables
+        let currentUser = null;
+        let isConnected = false;
+        let currentMasterDataType = '';
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            setDefaultDateTime();
+            setupEventListeners();
+            showConnectionPrompt();
+        });
+        
+        function showConnectionPrompt() {
+            showAlert('info', 'Click "Connect to SharePoint" to initialize the system with your SharePoint site.', 'worklogError');
+        }
+        
+        // Connection Management
+        async function initializeConnection() {
+            const siteUrl = SHAREPOINT_CONFIG.siteUrl;
+            if (!siteUrl) return;
+            
+            SHAREPOINT_CONFIG.siteUrl = siteUrl;
+            
+            try {
+                updateConnectionStatus('connecting');
+                
+                // In a real implementation, you would use SharePoint REST API or PnP JS
+                // For demo purposes, we'll simulate the connection
+                await simulateConnection();
+                
+                updateConnectionStatus('connected');
+                await loadAllData();
+                showAlert('success', 'Successfully connected to SharePoint!', 'worklogSuccess');
+                
+            } catch (error) {
+                updateConnectionStatus('disconnected');
+                showAlert('error', `Connection failed: ${error.message}`, 'worklogError');
+            }
+        }
+        
+        function updateConnectionStatus(status) {
+            const statusIndicator = document.getElementById('connectionStatus');
+            const statusText = document.getElementById('connectionText');
+            
+            switch (status) {
+                case 'connected':
+                    statusIndicator.className = 'status-indicator status-connected';
+                    statusText.textContent = 'Connected to SharePoint';
+                    isConnected = true;
+                    break;
+                case 'connecting':
+                    statusIndicator.className = 'status-indicator status-disconnected';
+                    statusText.textContent = 'Connecting...';
+                    break;
+                case 'disconnected':
+                    statusIndicator.className = 'status-indicator status-disconnected';
+                    statusText.textContent = 'Not connected';
+                    isConnected = false;
+                    break;
+            }
+        }
+        
+        async function simulateConnection() {
+            // Simulate API call delay
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // In real implementation, this would be actual SharePoint authentication
+            currentUser = {
+                email: 'current.user@company.com',
+                name: 'Current User',
+                role: 'Manager'
+            };
+        }
+        
+        async function testConnection() {
+            if (!isConnected) {
+                showAlert('error', 'Please connect to SharePoint first', 'worklogError');
+                return;
+            }
+            
+            try {
+                // In real implementation, this would test actual SharePoint connection
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                showAlert('success', 'Connection test successful!', 'worklogSuccess');
+            } catch (error) {
+                showAlert('error', `Connection test failed: ${error.message}`, 'worklogError');
+            }
+        }
+        
+        // Data Loading Functions
+        async function loadAllData() {
+            await Promise.all([
+                loadMasterData(),
+                loadRecentWorkLogs(),
+                loadTeamMembers(),
+                updateReportStats()
+            ]);
+        }
+        
+        async function loadMasterData() {
+            // Simulate loading master data from SharePoint
+            const masterData = {
+                taskTypes: [
+                    {id: 1, title: 'Issue Check', active: true, displayOrder: 1},
+                    {id: 2, title: 'Daily Task', active: true, displayOrder: 2},
+                    {id: 3, title: 'Documentation', active: true, displayOrder: 3},
+                    {id: 4, title: 'Client Call', active: true, displayOrder: 4},
+                    {id: 5, title: 'Analysis', active: true, displayOrder: 5}
+                ],
+                origins: [
+                    {id: 1, title: 'Email', active: true, displayOrder: 1},
+                    {id: 2, title: 'Internal Jira', active: true, displayOrder: 2},
+                    {id: 3, title: 'Teams', active: true, displayOrder: 3},
+                    {id: 4, title: 'External Jira/Ticket', active: true, displayOrder: 4}
+                ],
+                operators: [
+                    {id: 1, title: 'ORD Myanmar', active: true, displayOrder: 1},
+                    {id: 2, title: 'BSNL India', active: true, displayOrder: 2},
+                    {id: 3, title: 'ORD Kuwait', active: true, displayOrder: 3},
+                    {id: 4, title: 'DTAC', active: true, displayOrder: 4}
+                ],
+                products: [
+                    {id: 1, title: 'Selfcare', active: true, displayOrder: 1},
+                    {id: 2, title: 'B2B App', active: true, displayOrder: 2},
+                    {id: 3, title: 'Wallet/Mpitesan', active: true, displayOrder: 3},
+                    {id: 4, title: 'MiniApp', active: true, displayOrder: 4}
+                ],
+                impacts: [
+                    {id: 1, title: 'Critical-P1', active: true, priority: 1},
+                    {id: 2, title: 'Major-P2', active: true, priority: 2},
+                    {id: 3, title: 'Minor-P3', active: true, priority: 3},
+                    {id: 4, title: 'No Impact-P4', active: true, priority: 4}
+                ]
+            };
+            
+            populateDropdowns(masterData);
+            displayMasterDataLists(masterData);
+        }
+        
+        function populateDropdowns(data) {
+            // Populate Task Types
+            const taskTypeSelect = document.getElementById('taskType');
+            taskTypeSelect.innerHTML = '<option value="">Select Task Type</option>';
+            data.taskTypes.forEach(item => {
+                if (item.active) {
+                    taskTypeSelect.innerHTML += `<option value="${item.title}">${item.title}</option>`;
+                }
+            });
+            
+            // Populate Origins
+            const originSelect = document.getElementById('origin');
+            originSelect.innerHTML = '<option value="">Select Origin</option>';
+            data.origins.forEach(item => {
+                if (item.active) {
+                    originSelect.innerHTML += `<option value="${item.title}">${item.title}</option>`;
+                }
+            });
+            
+            // Populate Operators
+            const operatorSelect = document.getElementById('operatorRegion');
+            operatorSelect.innerHTML = '<option value="">Select Operator</option>';
+            data.operators.forEach(item => {
+                if (item.active) {
+                    operatorSelect.innerHTML += `<option value="${item.title}">${item.title}</option>`;
+                }
+            });
+            
+            // Populate Products
+            const productSelect = document.getElementById('product');
+            productSelect.innerHTML = '<option value="">Select Product</option>';
+            data.products.forEach(item => {
+                if (item.active) {
+                    productSelect.innerHTML += `<option value="${item.title}">${item.title}</option>`;
+                }
+            });
+            
+            // Populate Impact Levels
+            const impactSelect = document.getElementById('impact');
+            impactSelect.innerHTML = '<option value="">Select Impact</option>';
+            data.impacts.forEach(item => {
+                if (item.active) {
+                    impactSelect.innerHTML += `<option value="${item.title}">${item.title}</option>`;
+                }
+            });
+        }
+        
+        function displayMasterDataLists(data) {
+            // Display Task Types
+            const taskTypesList = document.getElementById('taskTypesList');
+            taskTypesList.innerHTML = data.taskTypes.map(item => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border: 1px solid #eee; border-radius: 5px; margin-bottom: 5px;">
+                    <div>
+                        <strong>${item.title}</strong>
+                        <small style="color: #666; margin-left: 10px;">Order: ${item.displayOrder}</small>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" style="padding: 5px 10px; margin-right: 5px;" onclick="editMasterDataItem('tasktype', ${item.id})">Edit</button>
+                        <button class="btn btn-danger" style="padding: 5px 10px;" onclick="deleteMasterDataItem('tasktype', ${item.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Similar for other master data types...
+            const operatorsList = document.getElementById('operatorsList');
+            operatorsList.innerHTML = data.operators.map(item => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border: 1px solid #eee; border-radius: 5px; margin-bottom: 5px;">
+                    <div>
+                        <strong>${item.title}</strong>
+                        <small style="color: #666; margin-left: 10px;">Order: ${item.displayOrder}</small>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" style="padding: 5px 10px; margin-right: 5px;" onclick="editMasterDataItem('operator', ${item.id})">Edit</button>
+                        <button class="btn btn-danger" style="padding: 5px 10px;" onclick="deleteMasterDataItem('operator', ${item.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Hide loading spinners
+            document.getElementById('taskTypesLoading').style.display = 'none';
+            document.getElementById('operatorsLoading').style.display = 'none';
+            document.getElementById('productsLoading').style.display = 'none';
+            document.getElementById('originsLoading').style.display = 'none';
+        }
+        
+        async function loadRecentWorkLogs() {
+            document.getElementById('worklogLoading').style.display = 'block';
+            
+            // Simulate loading work logs from SharePoint
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            const workLogs = [
+                {
+                    id: 1,
+                    date: '2025-06-02',
+                    taskType: 'Issue Check',
+                    description: 'Fixed critical login issues in Selfcare',
+                    duration: '180 mins',
+                    status: 'Completed',
+                    employee: 'Current User'
+                },
+                {
+                    id: 2,
+                    date: '2025-06-01',
+                    taskType: 'Documentation',
+                    description: 'Updated API documentation',
+                    duration: '120 mins',
+                    status: 'Completed',
+                    employee: 'Current User'
+                }
+            ];
+            
+            const tbody = document.getElementById('recentWorkLogsBody');
+            tbody.innerHTML = workLogs.map(log => `
+                <tr>
+                    <td>${log.date}</td>
+                    <td>${log.taskType}</td>
+                    <td>${log.description}</td>
+                    <td>${log.duration}</td>
+                    <td><span style="color: ${log.status === 'Completed' ? '#28a745' : '#ffc107'};">${log.status}</span></td>
+                    <td>
+                        <button class="btn btn-primary" style="padding: 5px 10px; margin-right: 5px;" onclick="editWorkLog(${log.id})">Edit</button>
+                        <button class="btn btn-danger" style="padding: 5px 10px;" onclick="deleteWorkLog(${log.id})">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+            
+            document.getElementById('worklogLoading').style.display = 'none';
+        }
+        
+        async function loadTeamMembers() {
+            document.getElementById('teamLoading').style.display = 'block';
+            
+            // Simulate loading team members from SharePoint
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            const teamMembers = [
+                {
+                    id: 1,
+                    name: 'Nitesh B',
+                    role: 'Manager',
+                    teamLead: '-',
+                    operators: 'ALL',
+                    products: 'ALL',
+                    status: 'Active'
+                },
+                {
+                    id: 2,
+                    name: 'Vishal V',
+                    role: 'Senior',
+                    teamLead: 'Nitesh B',
+                    operators: 'ORD Myanmar, BSNL India',
+                    products: 'Selfcare, B2B App',
+                    status: 'Active'
+                },
+                {
+                    id: 3,
+                    name: 'Sarath D',
+                    role: 'Team Lead',
+                    teamLead: 'Nitesh B',
+                    operators: 'Multiple',
+                    products: 'Multiple',
+                    status: 'Active'
+                }
+            ];
+            
+            const tbody = document.getElementById('teamMembersBody');
+            tbody.innerHTML = teamMembers.map(member => `
+                <tr>
+                    <td><strong>${member.name}</strong></td>
+                    <td>${member.role}</td>
+                    <td>${member.teamLead}</td>
+                    <td>${member.operators}</td>
+                    <td>${member.products}</td>
+                    <td><span style="color: #28a745;">${member.status}</span></td>
+                    <td>
+                        <button class="btn btn-primary" style="padding: 5px 10px; margin-right: 5px;" onclick="editTeamMember(${member.id})">Edit</button>
+                        <button class="btn btn-danger" style="padding: 5px 10px;" onclick="deleteTeamMember(${member.id})">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+            
+            document.getElementById('teamLoading').style.display = 'none';
+        }
+        
+        // Form Handling
+        function setupEventListeners() {
+            // Time calculation
+            document.getElementById('startDateTime').addEventListener('change', calculateTimeDuration);
+            document.getElementById('endDateTime').addEventListener('change', calculateTimeDuration);
+            
+            // Work log form submission
+            document.getElementById('workLogForm').addEventListener('submit', handleWorkLogSubmit);
+            
+            // Team member form submission
+            document.getElementById('teamMemberForm').addEventListener('submit', handleTeamMemberSubmit);
+            
+            // Master data form submission
+            document.getElementById('masterDataForm').addEventListener('submit', handleMasterDataSubmit);
+        }
+        
+        function calculateTimeDuration() {
+            const startDate = new Date(document.getElementById('startDateTime').value);
+            const endDate = new Date(document.getElementById('endDateTime').value);
+            
+            if (startDate && endDate && endDate > startDate) {
+                const diffMs = endDate - startDate;
+                const diffMins = Math.round(diffMs / (1000 * 60));
+                const hours = Math.floor(diffMins / 60);
+                const mins = diffMins % 60;
+                
+                document.getElementById('timeDuration').textContent = 
+                    `${diffMins} minutes (${hours}h ${mins}m)`;
+            } else {
+                document.getElementById('timeDuration').textContent = 
+                    'Please select valid start and end times';
+            }
+        }
+        
+        async function handleWorkLogSubmit(e) {
+            e.preventDefault();
+            
+            if (!isConnected) {
+                showAlert('error', 'Please connect to SharePoint first', 'worklogError');
+                return;
+            }
+            
+            const formData = new FormData(e.target);
+            const workLogData = Object.fromEntries(formData.entries());
+            
+            // Calculate time duration
+            const startDate = new Date(workLogData.startDateTime);
+            const endDate = new Date(workLogData.endDateTime);
+            const timeTakenMins = Math.round((endDate - startDate) / (1000 * 60));
+            
+            workLogData.timeTakenMins = timeTakenMins;
+            workLogData.employee = currentUser.email;
+            
+            try {
+                // In real implementation, this would save to SharePoint
+                await simulateSharePointSave('WorkLogEntries', workLogData);
+                
+                showAlert('success', `Work log entry saved successfully! Duration: ${timeTakenMins} minutes`, 'worklogSuccess');
+                clearWorkLogForm();
+                await loadRecentWorkLogs();
+                
+            } catch (error) {
+                showAlert('error', `Failed to save work log: ${error.message}`, 'worklogError');
+            }
+        }
+        
+        async function handleTeamMemberSubmit(e) {
+            e.preventDefault();
+            
+            if (!isConnected) {
+                showAlert('error', 'Please connect to SharePoint first', 'teamMemberError');
+                return;
+            }
+            
+            const formData = new FormData(e.target);
+            const memberData = Object.fromEntries(formData.entries());
+            
+            try {
+                // In real implementation, this would save to SharePoint
+                await simulateSharePointSave('TeamMembers', memberData);
+                
+                showAlert('success', `Team member ${memberData.employeeName} added successfully!`, 'teamMemberSuccess');
+                
+                setTimeout(() => {
+                    closeModal('teamMemberModal');
+                    loadTeamMembers();
+                }, 2000);
+                
+            } catch (error) {
+                showAlert('error', `Failed to add team member: ${error.message}`, 'teamMemberError');
+            }
+        }
+        
+        async function handleMasterDataSubmit(e) {
+            e.preventDefault();
+            
+            if (!isConnected) {
+                showAlert('error', 'Please connect to SharePoint first', 'masterDataError');
+                return;
+            }
+            
+            const formData = new FormData(e.target);
+            const itemData = Object.fromEntries(formData.entries());
+            itemData.active = true;
+            
+            try {
+                const listName = getMasterDataListName(currentMasterDataType);
+                await simulateSharePointSave(listName, itemData);
+                
+                showAlert('success', `${itemData.itemTitle} added successfully!`, 'masterDataSuccess');
+                
+                setTimeout(() => {
+                    closeModal('masterDataModal');
+                    loadMasterData();
+                }, 2000);
+                
+            } catch (error) {
+                showAlert('error', `Failed to add item: ${error.message}`, 'masterDataError');
+            }
+        }
+        
+        // Utility Functions
+        async function simulateSharePointSave(listName, data) {
+            // Simulate API call delay
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // In real implementation, this would be:
+            // return await pnp.sp.web.lists.getByTitle(listName).items.add(data);
+            
+            console.log(`Saving to ${listName}:`, data);
+            return { success: true, id: Math.random() };
+        }
+        
+        function getMasterDataListName(type) {
+            const mapping = {
+                'tasktype': 'TaskTypes',
+                'operator': 'OperatorsRegions',
+                'product': 'Products',
+                'origin': 'OriginSources'
+            };
+            return mapping[type];
+        }
+        
+        function setDefaultDateTime() {
+            const now = new Date();
+            const currentTime = now.toISOString().slice(0, 16);
+            document.getElementById('startDateTime').value = currentTime;
+            
+            const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
+            document.getElementById('endDateTime').value = oneHourLater.toISOString().slice(0, 16);
+            
+            calculateTimeDuration();
+        }
+        
+        function clearWorkLogForm() {
+            document.getElementById('workLogForm').reset();
+            setDefaultDateTime();
+        }
+        
+        function showTab(tabName) {
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            const navTabs = document.querySelectorAll('.nav-tab');
+            navTabs.forEach(tab => tab.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        function showAlert(type, message, elementId) {
+            const alertElement = document.getElementById(elementId);
+            alertElement.className = `alert alert-${type}`;
+            alertElement.textContent = message;
+            alertElement.style.display = 'block';
+            
+            setTimeout(() => {
+                alertElement.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Modal Management
+        function openAddTeamMemberModal() {
+            document.getElementById('teamMemberModal').style.display = 'block';
+        }
+        
+        function openAddMasterDataModal(type) {
+            currentMasterDataType = type;
+            const titles = {
+                'tasktype': 'Add New Task Type',
+                'operator': 'Add New Operator/Region',
+                'product': 'Add New Product',
+                'origin': 'Add New Origin Source'
+            };
+            
+            document.getElementById('masterDataModalTitle').textContent = titles[type];
+            document.getElementById('masterDataModal').style.display = 'block';
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        // Action Functions
+        function editWorkLog(id) {
+            alert(`Edit work log functionality would be implemented here for ID: ${id}`);
+        }
+        
+        function deleteWorkLog(id) {
+            if (confirm('Are you sure you want to delete this work log entry?')) {
+                alert(`Delete work log functionality would be implemented here for ID: ${id}`);
+            }
+        }
+        
+        function editTeamMember(id) {
+            alert(`Edit team member functionality would be implemented here for ID: ${id}`);
+        }
+        
+        function deleteTeamMember(id) {
+            if (confirm('Are you sure you want to remove this team member?')) {
+                alert(`Delete team member functionality would be implemented here for ID: ${id}`);
+            }
+        }
+        
+        function editMasterDataItem(type, id) {
+            alert(`Edit ${type} functionality would be implemented here for ID: ${id}`);
+        }
+        
+        function deleteMasterDataItem(type, id) {
+            if (confirm('Are you sure you want to delete this item?')) {
+                alert(`Delete ${type} functionality would be implemented here for ID: ${id}`);
+            }
+        }
+        
+        // Report Functions
+        async function updateReportStats() {
+            // Simulate loading report data
+            document.getElementById('totalHours').textContent = '42.5';
+            document.getElementById('completedTasks').textContent = '28';
+            document.getElementById('pendingTasks').textContent = '4';
+            document.getElementById('criticalIssues').textContent = '2';
+        }
+        
+        function generateWeeklyReport() {
+            alert('Generating weekly report... This would create a detailed weekly work log report.');
+        }
+        
+        function exportToExcel() {
+            alert('Exporting to Excel... This would download an Excel file with all work log data.');
+        }
+        
+        function viewWeeklyData() {
+            alert('Opening weekly data view... This would show the weekly interface we created earlier.');
+        }
+        
+        function viewMonthlyData() {
+            alert('Opening monthly data view... This would show monthly analytics and trends.');
+        }
+        
+        // Close modals when clicking outside
+        window.addEventListener('click', function(e) {
+            const modals = document.querySelectorAll('.form-modal');
+            modals.forEach(modal => {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
